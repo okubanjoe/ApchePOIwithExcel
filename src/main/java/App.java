@@ -6,19 +6,20 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.sql.*;
+import java.util.logging.Logger;
 
 public class App {
-        public static void main (String[]args) throws Exception {
-            try{
-            Class.forName("oracle.jdbc.driver.OracleDriver");
-            Connection connect = DriverManager.getConnection(
-                   "jdbc:oracle:thin:@localhost:1521:orclcdb","system","oracle"
-            );
-
-            Statement statement = connect.createStatement();
-            ResultSet resultSet = statement.executeQuery("select * from poicom");
-            XSSFWorkbook workbook = new XSSFWorkbook();
-            XSSFSheet spreadsheet = workbook.createSheet("spread");
+    private static  final Logger log = Logger.getLogger(App.class.getName());
+    static Statement statement;
+    static ResultSet resultSet;
+    static XSSFWorkbook workbook;
+    static XSSFSheet spreadsheet;
+    public static void main (String[]args) throws Exception {
+            try(Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:orclcdb","system","oracle")){
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery("select * from poicom");
+            workbook = new XSSFWorkbook();
+            spreadsheet = workbook.createSheet("spread");
 
             XSSFRow row = spreadsheet.createRow(1);
             XSSFCell cell;
@@ -48,9 +49,10 @@ public class App {
             FileOutputStream out = new FileOutputStream(new File("exceldatabase.xlsx"));
             workbook.write(out);
             out.close();
-            System.out.println("exceldatabase.xlsx written successfully");
+                log.info("exceldatabase.xlsx written successfully");
 
-            }catch(Exception e){ System.out.println(e);}
+            }catch(Exception e){e.printStackTrace();
+            }
 
         }
     }
