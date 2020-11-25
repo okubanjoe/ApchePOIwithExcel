@@ -5,7 +5,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.sql.*;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 public class App {
@@ -14,17 +16,25 @@ public class App {
     static ResultSet resultSet;
     static XSSFWorkbook workbook;
     static XSSFSheet spreadsheet;
+    static XSSFRow row;
+    static XSSFCell cell;
     public static void main (String[]args) throws Exception {
-            try(Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:orclcdb","system","oracle")){
-            statement = connection.createStatement();
+      InputStream inputStream = App.class.getClassLoader().getResourceAsStream("config.properties");
+       Properties prop = new Properties();
+       prop.load(inputStream);
+       String url = prop.getProperty("db.url");
+       String userName = prop.getProperty("db.userid");
+       String password = prop.getProperty("db.password");
+
+        try(Connection connect = DriverManager.getConnection(url, userName, password)){
+
+            statement = connect.createStatement();
             resultSet = statement.executeQuery("select * from poicom");
             workbook = new XSSFWorkbook();
             spreadsheet = workbook.createSheet("spread");
-
-            XSSFRow row = spreadsheet.createRow(1);
-            XSSFCell cell;
+            row = spreadsheet.createRow(1);
             cell = row.createCell(1);
-            cell.setCellValue("FNAME");
+            cell.setCellValue("AYNAME");
             cell = row.createCell(2);
             cell.setCellValue("LNAME");
             cell = row.createCell(3);
@@ -49,10 +59,9 @@ public class App {
             FileOutputStream out = new FileOutputStream(new File("exceldatabase.xlsx"));
             workbook.write(out);
             out.close();
-                log.info("exceldatabase.xlsx written successfully");
+            log.info("exceldatabase.xlsx written successfully");
 
-            }catch(Exception e){e.printStackTrace();
-            }
+        }catch(Exception e){ e.printStackTrace();}
 
-        }
     }
+}
